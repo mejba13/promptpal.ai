@@ -48,3 +48,4 @@ CLAUDE.md
 *.md
 !README.md
 AGENTS.md
+/src/generated/prisma
