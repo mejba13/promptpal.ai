@@ -92,8 +92,32 @@ const solutions = [
 
 export function SolutionsSection() {
   return (
-    <section id="solutions" className="section-padding">
-      <div className="container-wide">
+    <section id="solutions" className="relative py-24 lg:py-32 overflow-hidden">
+      {/* Premium layered background */}
+      <div className="absolute inset-0">
+        {/* Light background with subtle mint */}
+        <div className="absolute inset-0 bg-section-light" />
+
+        {/* Diagonal line pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `repeating-linear-gradient(
+              45deg,
+              rgba(34, 197, 94, 0.5),
+              rgba(34, 197, 94, 0.5) 1px,
+              transparent 1px,
+              transparent 40px
+            )`,
+          }}
+        />
+      </div>
+
+      {/* Floating glow orbs */}
+      <div className="absolute top-0 right-1/4 w-[400px] h-[400px] bg-mint-100/15 rounded-full blur-[100px]" />
+      <div className="absolute bottom-1/4 left-0 w-[350px] h-[350px] bg-emerald-50/20 rounded-full blur-[90px]" />
+
+      <div className="container-wide relative">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left Column - Header & Description */}
           <motion.div
@@ -112,8 +136,8 @@ export function SolutionsSection() {
             </p>
 
             {/* Dashboard Preview */}
-            <div className="bg-white rounded-2xl border border-border shadow-soft overflow-hidden">
-              <div className="p-4 border-b border-border bg-muted/30">
+            <div className="surface-elevated rounded-2xl border border-white/60 overflow-hidden">
+              <div className="p-4 border-b border-border/30 bg-slate-50/50">
                 <div className="flex items-center gap-2">
                   <div className="w-3 h-3 rounded-full bg-red-400" />
                   <div className="w-3 h-3 rounded-full bg-amber-400" />
@@ -170,7 +194,7 @@ export function SolutionsSection() {
                 <AccordionItem
                   key={solution.id}
                   value={solution.id}
-                  className="border border-border rounded-xl px-6 data-[state=open]:shadow-soft data-[state=open]:border-mint-200 transition-all"
+                  className="border border-white/60 rounded-xl px-6 surface-elevated data-[state=open]:shadow-soft-lg data-[state=open]:border-mint-200/50 transition-all"
                 >
                   <AccordionTrigger className="hover:no-underline py-5">
                     <div className="flex items-center gap-4 text-left">

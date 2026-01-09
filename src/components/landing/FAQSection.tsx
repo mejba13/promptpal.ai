@@ -56,8 +56,27 @@ const faqs = [
 
 export function FAQSection() {
   return (
-    <section id="faq" className="section-padding bg-muted/30">
-      <div className="container-wide">
+    <section id="faq" className="relative py-24 lg:py-32 overflow-hidden">
+      {/* Premium layered background */}
+      <div className="absolute inset-0">
+        {/* Cream section background */}
+        <div className="absolute inset-0 bg-section-cream" />
+
+        {/* Subtle pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.015]"
+          style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, rgba(34, 197, 94, 0.5) 1px, transparent 0)`,
+            backgroundSize: '36px 36px',
+          }}
+        />
+      </div>
+
+      {/* Floating glow orbs */}
+      <div className="absolute top-1/4 left-0 w-[300px] h-[300px] bg-mint-100/15 rounded-full blur-[80px]" />
+      <div className="absolute bottom-1/3 right-0 w-[400px] h-[400px] bg-mint-50/20 rounded-full blur-[100px]" />
+
+      <div className="container-wide relative">
         <div className="grid lg:grid-cols-5 gap-12 lg:gap-16">
           {/* Left Column - Header */}
           <motion.div
@@ -95,7 +114,7 @@ export function FAQSection() {
                 <AccordionItem
                   key={index}
                   value={`item-${index}`}
-                  className="border border-border rounded-xl px-6 bg-white data-[state=open]:shadow-soft transition-all"
+                  className="border border-white/60 rounded-xl px-6 surface-elevated data-[state=open]:shadow-soft-lg transition-all"
                 >
                   <AccordionTrigger className="hover:no-underline py-5 text-left">
                     <span className="font-medium pr-4">{faq.question}</span>
