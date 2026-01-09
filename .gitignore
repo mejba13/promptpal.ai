@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Claude AI local config (settings are personal, not shared)
+.claude/
+.lsp.json
+CLAUDE.md
+
+*.md
+!README.md
+AGENTS.md
