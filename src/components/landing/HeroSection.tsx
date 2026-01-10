@@ -150,7 +150,7 @@ function TypeWriter({ text, speed = 50 }: { text: string; speed?: number }) {
 }
 
 // ═══════════════════════════════════════════════════════════
-// PREMIUM AI DEMO - DARK MODE STUDIO
+// PREMIUM AI DEMO - EMERALD GLASSMORPHISM STUDIO
 // ═══════════════════════════════════════════════════════════
 
 function AIDemo() {
@@ -223,70 +223,73 @@ function AIDemo() {
   }, [currentDemo]);
 
   return (
-    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[22px] overflow-hidden relative">
-      {/* Animated gradient glow */}
+    <div className="h-full bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 rounded-[22px] overflow-hidden relative">
+      {/* Premium mesh gradient overlay */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15)_0%,_transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_left,_rgba(6,182,212,0.3)_0%,_transparent_50%)]" />
+
+      {/* Animated floating orbs */}
       <motion.div
-        className="absolute -top-32 -right-32 w-64 h-64 rounded-full blur-3xl"
+        className="absolute -top-20 -right-20 w-48 h-48 rounded-full bg-gradient-to-br from-white/20 to-transparent blur-2xl"
         animate={{
-          background: [
-            'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)',
-            'radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 70%)',
-            'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)',
-          ],
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.5, 0.3],
         }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
       />
       <motion.div
-        className="absolute -bottom-32 -left-32 w-64 h-64 rounded-full blur-3xl"
+        className="absolute -bottom-16 -left-16 w-40 h-40 rounded-full bg-gradient-to-br from-cyan-300/20 to-transparent blur-2xl"
         animate={{
-          background: [
-            'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)',
-            'radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%)',
-            'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)',
-          ],
+          scale: [1, 1.3, 1],
+          opacity: [0.2, 0.4, 0.2],
         }}
-        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
       />
 
-      {/* Header with premium styling */}
-      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between relative">
+      {/* Subtle noise texture */}
+      <div className="absolute inset-0 opacity-[0.03]" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+      }} />
+
+      {/* Header with glassmorphism */}
+      <div className="px-5 py-4 border-b border-white/20 flex items-center justify-between relative backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <motion.div
-            className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/30"
+            className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-lg border border-white/30"
             whileHover={{ scale: 1.1, rotate: 5 }}
           >
             <Sparkles className="w-4 h-4 text-white" />
           </motion.div>
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-white tracking-tight">AI Studio</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold shadow-lg shadow-emerald-500/30">PRO</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/25 backdrop-blur-sm text-white font-bold border border-white/30 shadow-sm">PRO</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-800/50 px-2.5 py-1 rounded-full">
+          <div className="flex items-center gap-1.5 text-[11px] text-white/80 bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/20">
             <motion.div
-              className="w-2 h-2 rounded-full bg-emerald-500"
+              className="w-2 h-2 rounded-full bg-white shadow-sm shadow-white/50"
               animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
             Live
           </div>
           <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors" />
-            <div className="w-3 h-3 rounded-full bg-emerald-500/80 hover:bg-emerald-500 transition-colors" />
+            <div className="w-3 h-3 rounded-full bg-red-400/80 hover:bg-red-400 transition-colors shadow-sm" />
+            <div className="w-3 h-3 rounded-full bg-amber-400/80 hover:bg-amber-400 transition-colors shadow-sm" />
+            <div className="w-3 h-3 rounded-full bg-white/80 hover:bg-white transition-colors shadow-sm" />
           </div>
         </div>
       </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-5 space-y-4 relative">
         {/* Input prompt with glass effect */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">Your Prompt</span>
+            <span className="text-[11px] text-white/70 uppercase tracking-widest font-semibold">Your Prompt</span>
           </div>
-          <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl px-4 py-3 border border-slate-700/50 shadow-inner">
-            <p className="text-sm text-slate-200 font-mono">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/20 shadow-inner">
+            <p className="text-sm text-white font-mono">
               {phase === 'input' ? <TypeWriter text={`"${current.input}"`} speed={80} /> : `"${current.input}"`}
             </p>
           </div>
@@ -306,27 +309,27 @@ function AIDemo() {
                   animate={{ rotate: phase === 'enhancing' ? 360 : 0 }}
                   transition={{ duration: 2, repeat: phase === 'enhancing' ? Infinity : 0, ease: 'linear' }}
                 >
-                  <Wand2 className="w-4 h-4 text-emerald-400" />
+                  <Wand2 className="w-4 h-4 text-white" />
                 </motion.div>
-                <span className="text-[11px] text-emerald-400 uppercase tracking-widest font-semibold">AI Enhanced</span>
+                <span className="text-[11px] text-white uppercase tracking-widest font-semibold">AI Enhanced</span>
                 <motion.span
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold"
+                  className="text-[10px] px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-sm text-white font-bold border border-white/30"
                 >
                   +94% quality
                 </motion.span>
               </div>
               <div className="relative">
                 <motion.div
-                  className="absolute -inset-[2px] bg-gradient-to-r from-emerald-500/60 via-cyan-500/60 to-emerald-500/60 rounded-2xl blur-md"
+                  className="absolute -inset-[2px] bg-gradient-to-r from-white/40 via-cyan-200/40 to-white/40 rounded-2xl blur-md"
                   animate={{
-                    opacity: [0.5, 0.8, 0.5],
+                    opacity: [0.4, 0.7, 0.4],
                   }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
-                <div className="relative bg-slate-800/80 backdrop-blur rounded-2xl px-4 py-3 border border-emerald-500/30">
-                  <p className="text-[12px] text-slate-200 leading-relaxed">
+                <div className="relative bg-white/15 backdrop-blur-md rounded-2xl px-4 py-3 border border-white/30">
+                  <p className="text-[12px] text-white leading-relaxed">
                     {phase === 'enhancing' ? (
                       <TypeWriter text={current.enhanced} speed={15} />
                     ) : (
@@ -347,7 +350,7 @@ function AIDemo() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="text-[10px] px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700/50 font-medium backdrop-blur-sm"
+              className="text-[10px] px-3 py-1.5 rounded-xl bg-white/10 backdrop-blur-sm text-white/90 border border-white/20 font-medium"
             >
               {tag}
             </motion.span>
@@ -357,10 +360,10 @@ function AIDemo() {
         {/* Generated Images Grid with premium styling */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">Generated</span>
+            <span className="text-[11px] text-white/70 uppercase tracking-widest font-semibold">Generated</span>
             {phase === 'generating' && (
               <motion.span
-                className="text-[12px] text-cyan-400 font-bold"
+                className="text-[12px] text-white font-bold"
                 animate={{ opacity: [1, 0.5, 1] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               >
@@ -384,13 +387,13 @@ function AIDemo() {
                 {/* Selection ring for first item */}
                 {i === 0 && phase === 'complete' && (
                   <motion.div
-                    className="absolute -inset-[3px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 rounded-xl"
+                    className="absolute -inset-[3px] bg-gradient-to-r from-white via-cyan-200 to-white rounded-xl"
                     animate={{ opacity: [0.6, 1, 0.6] }}
                     transition={{ duration: 2, repeat: Infinity }}
                   />
                 )}
 
-                <div className="relative w-full h-full rounded-xl shadow-lg overflow-hidden bg-slate-800">
+                <div className="relative w-full h-full rounded-xl shadow-lg overflow-hidden bg-white/10 backdrop-blur-sm border border-white/20">
                   {/* Actual image */}
                   <img
                     src={imageUrl}
@@ -400,9 +403,9 @@ function AIDemo() {
 
                   {/* Loading state */}
                   {phase === 'generating' && progress <= (i + 1) * 25 && (
-                    <div className="absolute inset-0 bg-slate-900/90 flex items-center justify-center backdrop-blur-sm">
+                    <div className="absolute inset-0 bg-emerald-900/60 flex items-center justify-center backdrop-blur-sm">
                       <motion.div
-                        className="w-6 h-6 border-2 border-slate-600 border-t-cyan-400 rounded-full"
+                        className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       />
@@ -412,15 +415,15 @@ function AIDemo() {
                   {/* Complete overlay */}
                   {(phase === 'complete' || (phase === 'generating' && progress > (i + 1) * 25)) && (
                     <>
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/40 via-transparent to-transparent" />
                       {i === 0 && (
                         <motion.div
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
                           transition={{ type: 'spring', stiffness: 200, damping: 10 }}
-                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/50"
+                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-white rounded-full flex items-center justify-center shadow-lg"
                         >
-                          <Check className="w-3 h-3 text-white" />
+                          <Check className="w-3 h-3 text-emerald-600" />
                         </motion.div>
                       )}
                     </>
@@ -433,11 +436,11 @@ function AIDemo() {
 
         {/* Progress bar with gradient animation */}
         <div className="pt-2">
-          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="h-1.5 bg-white/10 backdrop-blur-sm rounded-full overflow-hidden border border-white/10">
             <motion.div
               className="h-full rounded-full"
               style={{
-                background: 'linear-gradient(90deg, #10b981, #06b6d4, #10b981)',
+                background: 'linear-gradient(90deg, rgba(255,255,255,0.9), rgba(255,255,255,0.6), rgba(255,255,255,0.9))',
                 backgroundSize: '200% 100%',
               }}
               initial={{ width: '0%', backgroundPosition: '0% 50%' }}
