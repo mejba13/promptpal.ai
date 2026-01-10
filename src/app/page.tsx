@@ -7,7 +7,6 @@ import {
   TestimonialsSection,
   SolutionsSection,
   FAQSection,
-  CTASection,
 } from '@/components/landing';
 
 export default function HomePage() {
@@ -29,7 +28,6 @@ export default function HomePage() {
         <PricingSection />
         <TestimonialsSection />
         <FAQSection />
-        <CTASection />
       </main>
       <Footer />
     </div>

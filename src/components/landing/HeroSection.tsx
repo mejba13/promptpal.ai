@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,13 @@ import {
   Star,
   Shield,
   Check,
+  Zap,
 } from 'lucide-react';
 
-// Animated counter hook
+// ═══════════════════════════════════════════════════════════
+// HOOKS
+// ═══════════════════════════════════════════════════════════
+
 function useCounter(end: number, duration: number = 2000) {
   const [count, setCount] = useState(0);
   const started = useRef(false);
@@ -41,37 +45,83 @@ function useCounter(end: number, duration: number = 2000) {
   return count;
 }
 
-// Bento card wrapper component
+// Mouse parallax hook
+function useMouseParallax(intensity: number = 0.02) {
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springConfig = { damping: 25, stiffness: 150 };
+  const springX = useSpring(x, springConfig);
+  const springY = useSpring(y, springConfig);
+
+  useEffect(() => {
+    const handleMouse = (e: MouseEvent) => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      x.set((e.clientX - centerX) * intensity);
+      y.set((e.clientY - centerY) * intensity);
+    };
+    window.addEventListener('mousemove', handleMouse);
+    return () => window.removeEventListener('mousemove', handleMouse);
+  }, [intensity, x, y]);
+
+  return { x: springX, y: springY };
+}
+
+// ═══════════════════════════════════════════════════════════
+// PREMIUM BENTO CARD
+// ═══════════════════════════════════════════════════════════
+
 function BentoCard({
   children,
   className = '',
   delay = 0,
   hover = true,
+  glow = false,
+  gradient = false,
 }: {
   children: React.ReactNode;
   className?: string;
   delay?: number;
   hover?: boolean;
+  glow?: boolean;
+  gradient?: boolean;
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20, scale: 0.95 }}
+      initial={{ opacity: 0, y: 30, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, delay, ease: [0.25, 0.1, 0.25, 1] }}
-      whileHover={hover ? { y: -4, transition: { duration: 0.2 } } : undefined}
+      transition={{ duration: 0.6, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      whileHover={hover ? { y: -6, scale: 1.01, transition: { duration: 0.25 } } : undefined}
       className={`relative group ${className}`}
     >
+      {/* Animated glow effect */}
+      {glow && (
+        <motion.div
+          className="absolute -inset-[2px] rounded-[28px] bg-gradient-to-r from-mint-400 via-emerald-500 to-cyan-400 opacity-0 group-hover:opacity-70 blur-xl transition-all duration-700"
+          animate={{
+            backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+          }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'linear' }}
+          style={{ backgroundSize: '200% 200%' }}
+        />
+      )}
+
       {/* Gradient border effect */}
-      <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-br from-white/80 via-white/40 to-white/80 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-      <div className="relative h-full bg-white/70 backdrop-blur-sm rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-500">
+      <div className="absolute -inset-[1px] rounded-[26px] bg-gradient-to-br from-white/90 via-white/50 to-white/90 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+      {/* Main card */}
+      <div className={`relative h-full rounded-[24px] border border-slate-200/60 overflow-hidden shadow-lg shadow-slate-200/20 hover:shadow-2xl hover:shadow-slate-300/30 transition-all duration-500 ${gradient ? 'bg-gradient-to-br from-white/90 via-white/80 to-mint-50/50' : 'bg-white/80'} backdrop-blur-xl`}>
         {children}
       </div>
     </motion.div>
   );
 }
 
-// Typing animation component
-function TypeWriter({ text, speed = 50, onComplete }: { text: string; speed?: number; onComplete?: () => void }) {
+// ═══════════════════════════════════════════════════════════
+// TYPING ANIMATION
+// ═══════════════════════════════════════════════════════════
+
+function TypeWriter({ text, speed = 50 }: { text: string; speed?: number }) {
   const [displayed, setDisplayed] = useState('');
   const [isDone, setIsDone] = useState(false);
 
@@ -85,22 +135,24 @@ function TypeWriter({ text, speed = 50, onComplete }: { text: string; speed?: nu
         i++;
       } else {
         setIsDone(true);
-        onComplete?.();
         clearInterval(timer);
       }
     }, speed);
     return () => clearInterval(timer);
-  }, [text, speed, onComplete]);
+  }, [text, speed]);
 
   return (
     <span>
       {displayed}
-      {!isDone && <span className="animate-pulse">|</span>}
+      {!isDone && <span className="animate-pulse text-cyan-400">|</span>}
     </span>
   );
 }
 
-// Premium AI Demo showcase - Dark mode studio interface
+// ═══════════════════════════════════════════════════════════
+// PREMIUM AI DEMO - DARK MODE STUDIO
+// ═══════════════════════════════════════════════════════════
+
 function AIDemo() {
   const [phase, setPhase] = useState<'input' | 'enhancing' | 'generating' | 'complete'>('input');
   const [currentDemo, setCurrentDemo] = useState(0);
@@ -110,19 +162,34 @@ function AIDemo() {
     {
       input: 'a cute robot',
       enhanced: 'Adorable companion robot with expressive LED eyes, soft rounded chrome body, warm ambient lighting, Pixar-style 3D render, 8K detail',
-      colors: ['from-cyan-400 to-blue-500', 'from-blue-400 to-indigo-500', 'from-indigo-400 to-purple-500', 'from-purple-400 to-pink-500'],
+      images: [
+        'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1535378620166-273708d44e4c?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&h=200&fit=crop&q=80',
+      ],
       model: 'SDXL Turbo',
     },
     {
       input: 'mountain sunset',
-      enhanced: 'Majestic snow-capped peaks at golden hour, dramatic clouds with coral and amber hues, crystal alpine lake reflection, cinematic wide shot, National Geographic style',
-      colors: ['from-orange-400 to-rose-500', 'from-rose-400 to-pink-500', 'from-amber-400 to-orange-500', 'from-yellow-400 to-amber-500'],
+      enhanced: 'Majestic snow-capped peaks at golden hour, dramatic clouds with coral and amber hues, crystal alpine lake reflection, cinematic wide shot',
+      images: [
+        'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=200&h=200&fit=crop&q=80',
+      ],
       model: 'DALL-E 3',
     },
     {
       input: 'cyberpunk street',
-      enhanced: 'Neon-drenched Tokyo alley at midnight, holographic advertisements reflecting on rain-slicked streets, steam rising from vents, Blade Runner atmosphere, volumetric lighting',
-      colors: ['from-violet-500 to-purple-600', 'from-fuchsia-500 to-pink-600', 'from-cyan-400 to-teal-500', 'from-blue-500 to-cyan-500'],
+      enhanced: 'Neon-drenched Tokyo alley at midnight, holographic advertisements reflecting on rain-slicked streets, volumetric lighting',
+      images: [
+        'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1480796927426-f609979314bd?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=200&h=200&fit=crop&q=80',
+        'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=200&h=200&fit=crop&q=80',
+      ],
       model: 'Flux Pro',
     },
   ];
@@ -156,65 +223,112 @@ function AIDemo() {
   }, [currentDemo]);
 
   return (
-    <div className="h-full bg-slate-900 rounded-2xl overflow-hidden relative">
-      {/* Glow effects */}
-      <div className="absolute -top-20 -right-20 w-40 h-40 bg-emerald-500/20 rounded-full blur-3xl" />
-      <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/20 rounded-full blur-3xl" />
+    <div className="h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[22px] overflow-hidden relative">
+      {/* Animated gradient glow */}
+      <motion.div
+        className="absolute -top-32 -right-32 w-64 h-64 rounded-full blur-3xl"
+        animate={{
+          background: [
+            'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(6,182,212,0.3) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(16,185,129,0.3) 0%, transparent 70%)',
+          ],
+        }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+      />
+      <motion.div
+        className="absolute -bottom-32 -left-32 w-64 h-64 rounded-full blur-3xl"
+        animate={{
+          background: [
+            'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(236,72,153,0.2) 0%, transparent 70%)',
+            'radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%)',
+          ],
+        }}
+        transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+      />
 
-      {/* Header */}
-      <div className="px-4 py-3 border-b border-white/10 flex items-center justify-between relative">
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center">
-            <Sparkles className="w-3 h-3 text-white" />
+      {/* Header with premium styling */}
+      <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between relative">
+        <div className="flex items-center gap-3">
+          <motion.div
+            className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center shadow-lg shadow-emerald-500/30"
+            whileHover={{ scale: 1.1, rotate: 5 }}
+          >
+            <Sparkles className="w-4 h-4 text-white" />
+          </motion.div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-white tracking-tight">AI Studio</span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 text-white font-bold shadow-lg shadow-emerald-500/30">PRO</span>
           </div>
-          <span className="text-xs font-semibold text-white">AI Studio</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-medium">PRO</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-[10px] text-slate-400">
-            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 text-[11px] text-slate-400 bg-slate-800/50 px-2.5 py-1 rounded-full">
+            <motion.div
+              className="w-2 h-2 rounded-full bg-emerald-500"
+              animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
             Live
           </div>
-          <div className="flex gap-1">
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-700" />
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-500 transition-colors" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80 hover:bg-yellow-500 transition-colors" />
+            <div className="w-3 h-3 rounded-full bg-emerald-500/80 hover:bg-emerald-500 transition-colors" />
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-3">
-        {/* Input prompt */}
+      <div className="p-5 space-y-4">
+        {/* Input prompt with glass effect */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Your Prompt</span>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">Your Prompt</span>
           </div>
-          <div className="bg-slate-800/50 rounded-xl px-3 py-2.5 border border-slate-700/50">
-            <p className="text-xs text-slate-300 font-mono">
+          <div className="bg-slate-800/60 backdrop-blur-sm rounded-2xl px-4 py-3 border border-slate-700/50 shadow-inner">
+            <p className="text-sm text-slate-200 font-mono">
               {phase === 'input' ? <TypeWriter text={`"${current.input}"`} speed={80} /> : `"${current.input}"`}
             </p>
           </div>
         </div>
 
-        {/* AI Enhancement */}
+        {/* AI Enhancement with premium animation */}
         <AnimatePresence mode="wait">
           {(phase === 'enhancing' || phase === 'generating' || phase === 'complete') && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              initial={{ opacity: 0, height: 0, y: 20 }}
+              animate={{ opacity: 1, height: 'auto', y: 0 }}
               exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
             >
-              <div className="flex items-center gap-2 mb-1.5">
-                <Wand2 className="w-3 h-3 text-emerald-400" />
-                <span className="text-[10px] text-emerald-400 uppercase tracking-wider font-medium">AI Enhanced</span>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">+94% quality</span>
+              <div className="flex items-center gap-2 mb-2">
+                <motion.div
+                  animate={{ rotate: phase === 'enhancing' ? 360 : 0 }}
+                  transition={{ duration: 2, repeat: phase === 'enhancing' ? Infinity : 0, ease: 'linear' }}
+                >
+                  <Wand2 className="w-4 h-4 text-emerald-400" />
+                </motion.div>
+                <span className="text-[11px] text-emerald-400 uppercase tracking-widest font-semibold">AI Enhanced</span>
+                <motion.span
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold"
+                >
+                  +94% quality
+                </motion.span>
               </div>
               <div className="relative">
-                <div className="absolute -inset-[1px] bg-gradient-to-r from-emerald-500/50 via-cyan-500/50 to-emerald-500/50 rounded-xl blur-sm" />
-                <div className="relative bg-slate-800 rounded-xl px-3 py-2.5 border border-emerald-500/30">
-                  <p className="text-[11px] text-slate-200 leading-relaxed">
+                <motion.div
+                  className="absolute -inset-[2px] bg-gradient-to-r from-emerald-500/60 via-cyan-500/60 to-emerald-500/60 rounded-2xl blur-md"
+                  animate={{
+                    opacity: [0.5, 0.8, 0.5],
+                  }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <div className="relative bg-slate-800/80 backdrop-blur rounded-2xl px-4 py-3 border border-emerald-500/30">
+                  <p className="text-[12px] text-slate-200 leading-relaxed">
                     {phase === 'enhancing' ? (
-                      <TypeWriter text={current.enhanced} speed={20} />
+                      <TypeWriter text={current.enhanced} speed={15} />
                     ) : (
                       current.enhanced
                     )}
@@ -225,72 +339,88 @@ function AIDemo() {
           )}
         </AnimatePresence>
 
-        {/* Model & Quality indicators */}
+        {/* Model & Quality tags */}
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[9px] px-2 py-1 rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-medium">
-            {current.model}
-          </span>
-          <span className="text-[9px] px-2 py-1 rounded-lg bg-slate-800 text-slate-400 border border-slate-700">
-            4K Ultra HD
-          </span>
-          <span className="text-[9px] px-2 py-1 rounded-lg bg-slate-800 text-slate-400 border border-slate-700">
-            Batch: 4
-          </span>
+          {[current.model, '4K Ultra HD', 'Batch: 4'].map((tag, i) => (
+            <motion.span
+              key={tag}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.1 }}
+              className="text-[10px] px-3 py-1.5 rounded-xl bg-slate-800/80 text-slate-300 border border-slate-700/50 font-medium backdrop-blur-sm"
+            >
+              {tag}
+            </motion.span>
+          ))}
         </div>
 
-        {/* Generated Images Grid */}
+        {/* Generated Images Grid with premium styling */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] text-slate-500 uppercase tracking-wider font-medium">Generated</span>
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">Generated</span>
             {phase === 'generating' && (
-              <span className="text-[10px] text-cyan-400 font-medium">{progress}%</span>
+              <motion.span
+                className="text-[12px] text-cyan-400 font-bold"
+                animate={{ opacity: [1, 0.5, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                {progress}%
+              </motion.span>
             )}
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
-            {current.colors.map((color, i) => (
+          <div className="grid grid-cols-4 gap-2.5">
+            {current.images.map((imageUrl, i) => (
               <motion.div
                 key={i}
-                className="relative aspect-square rounded-lg overflow-hidden"
-                initial={{ opacity: 0.3, scale: 0.95 }}
+                className="relative aspect-square rounded-xl overflow-hidden"
+                initial={{ opacity: 0.3, scale: 0.9 }}
                 animate={{
                   opacity: phase === 'complete' || (phase === 'generating' && progress > (i + 1) * 25) ? 1 : 0.3,
-                  scale: phase === 'complete' || (phase === 'generating' && progress > (i + 1) * 25) ? 1 : 0.95,
+                  scale: phase === 'complete' || (phase === 'generating' && progress > (i + 1) * 25) ? 1 : 0.9,
                 }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
               >
-                {/* Glow ring for active */}
+                {/* Selection ring for first item */}
                 {i === 0 && phase === 'complete' && (
-                  <div className="absolute -inset-[2px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 rounded-lg opacity-60 blur-sm" />
+                  <motion.div
+                    className="absolute -inset-[3px] bg-gradient-to-r from-emerald-400 via-cyan-400 to-emerald-400 rounded-xl"
+                    animate={{ opacity: [0.6, 1, 0.6] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
                 )}
 
-                <div className={`relative w-full h-full bg-gradient-to-br ${color} rounded-lg`}>
-                  {/* Loading shimmer */}
+                <div className="relative w-full h-full rounded-xl shadow-lg overflow-hidden bg-slate-800">
+                  {/* Actual image */}
+                  <img
+                    src={imageUrl}
+                    alt={`Generated ${current.input} ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+
+                  {/* Loading state */}
                   {phase === 'generating' && progress <= (i + 1) * 25 && (
-                    <div className="absolute inset-0 bg-slate-800/80 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-slate-900/90 flex items-center justify-center backdrop-blur-sm">
                       <motion.div
-                        className="w-4 h-4 border-2 border-slate-600 border-t-cyan-400 rounded-full"
+                        className="w-6 h-6 border-2 border-slate-600 border-t-cyan-400 rounded-full"
                         animate={{ rotate: 360 }}
                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       />
                     </div>
                   )}
 
-                  {/* Completion overlay */}
+                  {/* Complete overlay */}
                   {(phase === 'complete' || (phase === 'generating' && progress > (i + 1) * 25)) && (
                     <>
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                       {i === 0 && (
                         <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                          className="absolute top-1 right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center"
+                          initial={{ scale: 0, rotate: -180 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: 'spring', stiffness: 200, damping: 10 }}
+                          className="absolute top-1.5 right-1.5 w-5 h-5 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/50"
                         >
-                          <Check className="w-2.5 h-2.5 text-white" />
+                          <Check className="w-3 h-3 text-white" />
                         </motion.div>
                       )}
                     </>
@@ -301,14 +431,24 @@ function AIDemo() {
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="pt-1">
-          <div className="h-1 bg-slate-800 rounded-full overflow-hidden">
+        {/* Progress bar with gradient animation */}
+        <div className="pt-2">
+          <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-gradient-to-r from-emerald-500 via-cyan-500 to-emerald-500 rounded-full"
-              initial={{ width: '0%' }}
-              animate={{ width: phase === 'complete' ? '100%' : `${progress}%` }}
-              transition={{ duration: 0.3 }}
+              className="h-full rounded-full"
+              style={{
+                background: 'linear-gradient(90deg, #10b981, #06b6d4, #10b981)',
+                backgroundSize: '200% 100%',
+              }}
+              initial={{ width: '0%', backgroundPosition: '0% 50%' }}
+              animate={{
+                width: phase === 'complete' ? '100%' : `${progress}%`,
+                backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
+              }}
+              transition={{
+                width: { duration: 0.3 },
+                backgroundPosition: { duration: 3, repeat: Infinity, ease: 'linear' },
+              }}
             />
           </div>
         </div>
@@ -317,40 +457,60 @@ function AIDemo() {
   );
 }
 
-// Stat card component
+// ═══════════════════════════════════════════════════════════
+// PREMIUM STAT CARD
+// ═══════════════════════════════════════════════════════════
+
 function StatCard({
   value,
   suffix = '',
   label,
   icon: Icon,
   delay = 0,
+  gradient = 'from-mint-500 to-emerald-600',
 }: {
   value: number;
   suffix?: string;
   label: string;
   icon: React.ElementType;
   delay?: number;
+  gradient?: string;
 }) {
-  const count = useCounter(value, 2000);
+  const count = useCounter(value, 2500);
 
   return (
-    <BentoCard delay={delay} className="h-full">
-      <div className="p-5 h-full flex flex-col justify-between">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-mint-100 to-emerald-100 flex items-center justify-center mb-3">
-          <Icon className="w-5 h-5 text-emerald-600" />
-        </div>
+    <BentoCard delay={delay} className="h-full" glow>
+      <div className="p-6 h-full flex flex-col justify-between relative overflow-hidden">
+        {/* Background decoration */}
+        <div className={`absolute -top-8 -right-8 w-24 h-24 rounded-full bg-gradient-to-br ${gradient} opacity-10 blur-2xl`} />
+
+        <motion.div
+          className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 shadow-lg`}
+          whileHover={{ scale: 1.1, rotate: 5 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+        >
+          <Icon className="w-6 h-6 text-white" />
+        </motion.div>
         <div>
-          <p className="text-3xl font-bold text-slate-900 tracking-tight">
-            {count.toLocaleString()}{suffix}
-          </p>
-          <p className="text-xs text-slate-500 font-medium mt-1">{label}</p>
+          <motion.p
+            className="text-4xl font-bold text-slate-900 tracking-tight"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: delay + 0.2 }}
+          >
+            {typeof value === 'number' && value % 1 !== 0 ? (count / 10).toFixed(1) : count.toLocaleString()}{suffix}
+          </motion.p>
+          <p className="text-sm text-slate-500 font-medium mt-1">{label}</p>
         </div>
       </div>
     </BentoCard>
   );
 }
 
-// Feature mini card
+// ═══════════════════════════════════════════════════════════
+// PREMIUM FEATURE CARD
+// ═══════════════════════════════════════════════════════════
+
 function FeatureCard({
   icon: Icon,
   title,
@@ -365,81 +525,157 @@ function FeatureCard({
   delay?: number;
 }) {
   return (
-    <BentoCard delay={delay} className="h-full">
-      <div className="p-5 h-full">
-        <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 shadow-lg`}>
-          <Icon className="w-5 h-5 text-white" />
-        </div>
-        <h3 className="font-semibold text-slate-900 text-sm mb-1">{title}</h3>
-        <p className="text-xs text-slate-500 leading-relaxed">{description}</p>
+    <BentoCard delay={delay} className="h-full" gradient>
+      <div className="p-6 h-full relative overflow-hidden">
+        {/* Subtle background decoration */}
+        <div className={`absolute -bottom-16 -right-16 w-32 h-32 rounded-full bg-gradient-to-br ${gradient} opacity-10 blur-3xl`} />
+
+        <motion.div
+          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 shadow-xl`}
+          whileHover={{ scale: 1.1, rotate: -5 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+        >
+          <Icon className="w-7 h-7 text-white" />
+        </motion.div>
+        <h3 className="font-bold text-slate-900 text-base mb-2">{title}</h3>
+        <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
       </div>
     </BentoCard>
   );
 }
 
+// ═══════════════════════════════════════════════════════════
+// FLOATING ELEMENT
+// ═══════════════════════════════════════════════════════════
+
+function FloatingElement({ children, delay = 0, duration = 4, y = 15 }: { children: React.ReactNode; delay?: number; duration?: number; y?: number }) {
+  return (
+    <motion.div
+      animate={{ y: [-y, y, -y] }}
+      transition={{ duration, repeat: Infinity, ease: 'easeInOut', delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════
+// MAIN HERO SECTION
+// ═══════════════════════════════════════════════════════════
+
 export function HeroSection() {
+  const { x, y } = useMouseParallax(0.015);
+
   return (
     <section className="relative min-h-screen overflow-hidden">
-      {/* Premium background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#f8fdfb] via-[#f0fdf6] to-[#ecfdf3]" />
+      {/* ═══ PREMIUM BACKGROUND ═══ */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#f8fdfb] via-[#f0fdf6] to-[#e8faf0]" />
 
-      {/* Animated gradient orbs */}
+      {/* Animated gradient mesh */}
       <div className="absolute inset-0 overflow-hidden">
         <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full bg-gradient-radial from-mint-200/50 to-transparent blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1, 1.3, 1],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute -bottom-40 -left-40 w-[500px] h-[500px] rounded-full bg-gradient-radial from-emerald-200/40 to-transparent blur-3xl"
-        />
+          style={{ x, y }}
+          className="absolute inset-0"
+        >
+          <motion.div
+            animate={{
+              scale: [1, 1.3, 1],
+              opacity: [0.4, 0.6, 0.4],
+              rotate: [0, 90, 0],
+            }}
+            transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute -top-32 -right-32 w-[800px] h-[800px] rounded-full bg-gradient-conic from-mint-200/50 via-emerald-100/30 to-cyan-200/50 blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.4, 1],
+              opacity: [0.3, 0.5, 0.3],
+              rotate: [0, -90, 0],
+            }}
+            transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut', delay: 5 }}
+            className="absolute -bottom-32 -left-32 w-[700px] h-[700px] rounded-full bg-gradient-conic from-emerald-200/40 via-teal-100/30 to-mint-200/40 blur-3xl"
+          />
+          <motion.div
+            animate={{
+              scale: [1, 1.2, 1],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-gradient-radial from-cyan-100/30 to-transparent blur-3xl"
+          />
+        </motion.div>
       </div>
 
-      {/* Subtle grid pattern */}
+      {/* Elegant grid pattern */}
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.015]"
         style={{
-          backgroundImage: `linear-gradient(#10b981 1px, transparent 1px), linear-gradient(90deg, #10b981 1px, transparent 1px)`,
-          backgroundSize: '50px 50px',
+          backgroundImage: `
+            linear-gradient(to right, #10b981 1px, transparent 1px),
+            linear-gradient(to bottom, #10b981 1px, transparent 1px)
+          `,
+          backgroundSize: '80px 80px',
         }}
       />
 
-      <div className="container-wide relative pt-24 pb-16 lg:pt-28 lg:pb-20">
-        {/* Main Bento Grid */}
+      {/* Floating decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <FloatingElement delay={0} duration={6} y={20}>
+          <div className="absolute top-[15%] left-[10%] w-3 h-3 rounded-full bg-gradient-to-br from-mint-400 to-emerald-500 opacity-60 blur-[1px]" />
+        </FloatingElement>
+        <FloatingElement delay={1} duration={5} y={15}>
+          <div className="absolute top-[25%] right-[15%] w-4 h-4 rounded-full bg-gradient-to-br from-cyan-400 to-teal-500 opacity-50 blur-[1px]" />
+        </FloatingElement>
+        <FloatingElement delay={2} duration={7} y={25}>
+          <div className="absolute bottom-[30%] left-[8%] w-2 h-2 rounded-full bg-gradient-to-br from-emerald-400 to-mint-500 opacity-70" />
+        </FloatingElement>
+        <FloatingElement delay={0.5} duration={8} y={18}>
+          <div className="absolute top-[40%] right-[8%] w-5 h-5 rounded-full bg-gradient-to-br from-teal-300 to-cyan-400 opacity-40 blur-sm" />
+        </FloatingElement>
+      </div>
+
+      {/* ═══ MAIN CONTENT ═══ */}
+      <div className="container-wide relative pt-28 pb-20 lg:pt-32 lg:pb-24">
+        {/* Bento Grid Layout */}
         <div className="grid grid-cols-12 gap-4 lg:gap-5">
 
-          {/* === HERO CARD - Main headline and CTA === */}
-          <BentoCard delay={0} hover={false} className="col-span-12 lg:col-span-7 row-span-2">
-            <div className="p-8 lg:p-10 h-full flex flex-col justify-center relative overflow-hidden">
-              {/* Decorative element */}
-              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-radial from-mint-100/50 to-transparent rounded-full blur-2xl" />
+          {/* ════════════════════════════════════════════════════════════
+               MAIN HERO CARD - Headlines, CTAs
+          ════════════════════════════════════════════════════════════ */}
+          <BentoCard delay={0} hover={false} className="col-span-12 lg:col-span-7 row-span-2" gradient>
+            <div className="p-8 lg:p-12 h-full flex flex-col justify-center relative overflow-hidden">
+              {/* Decorative gradient orb */}
+              <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-radial from-mint-100/60 to-transparent rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-radial from-cyan-100/40 to-transparent rounded-full blur-2xl" />
 
-              <div className="relative">
-                {/* Badge */}
+              <div className="relative z-10">
+                {/* Premium Badge */}
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-100 mb-6"
+                  initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
+                  className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-mint-50 border border-emerald-200/60 mb-8 shadow-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-xs font-semibold text-emerald-700">AI-Powered Content Platform</span>
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
+                  >
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                  </motion.div>
+                  <span className="text-sm font-semibold bg-gradient-to-r from-emerald-700 to-teal-600 bg-clip-text text-transparent">
+                    AI-Powered Content Platform
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500 text-white font-bold">
+                    NEW
+                  </span>
                 </motion.div>
 
-                {/* Headline */}
+                {/* Main Headline */}
                 <motion.h1
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 25 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3, duration: 0.6 }}
-                  className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 leading-[1.1] mb-5"
+                  transition={{ delay: 0.3, duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
+                  className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05] mb-6"
                 >
                   Create stunning
                   <br />
@@ -448,20 +684,21 @@ export function HeroSection() {
                     <span className="bg-gradient-to-r from-emerald-600 via-teal-500 to-cyan-500 bg-clip-text text-transparent">
                       AI magic
                     </span>
-                    <svg className="absolute -bottom-1 left-0 w-full h-3" viewBox="0 0 200 12">
+                    <svg className="absolute -bottom-2 left-0 w-full h-4" viewBox="0 0 200 15">
                       <motion.path
-                        d="M0 8 Q40 2 100 6 T200 8"
+                        d="M0 10 Q30 3 60 8 T120 6 T200 10"
                         fill="none"
-                        stroke="url(#hero-underline)"
-                        strokeWidth="3"
+                        stroke="url(#hero-underline-gradient)"
+                        strokeWidth="4"
                         strokeLinecap="round"
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ delay: 1, duration: 0.8 }}
+                        initial={{ pathLength: 0, opacity: 0 }}
+                        animate={{ pathLength: 1, opacity: 1 }}
+                        transition={{ delay: 1.2, duration: 1, ease: 'easeOut' }}
                       />
                       <defs>
-                        <linearGradient id="hero-underline" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <linearGradient id="hero-underline-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                           <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="50%" stopColor="#14b8a6" />
                           <stop offset="100%" stopColor="#06b6d4" />
                         </linearGradient>
                       </defs>
@@ -471,78 +708,130 @@ export function HeroSection() {
 
                 {/* Subheadline */}
                 <motion.p
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="text-lg text-slate-600 leading-relaxed mb-8 max-w-md"
+                  transition={{ delay: 0.45 }}
+                  className="text-xl text-slate-600 leading-relaxed mb-10 max-w-lg"
                 >
                   Transform simple ideas into professional images, videos, and content. Smart prompts make everyone a creative expert.
                 </motion.p>
 
-                {/* CTAs */}
+                {/* CTA Buttons */}
                 <motion.div
-                  initial={{ opacity: 0, y: 15 }}
+                  initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="flex flex-wrap gap-3 mb-6"
+                  transition={{ delay: 0.55 }}
+                  className="flex flex-wrap gap-4 mb-8"
                 >
                   <Link href="/register">
                     <Button
                       size="lg"
-                      className="h-12 px-6 text-sm font-semibold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-lg shadow-slate-900/20 group"
+                      className="h-14 px-8 text-base font-semibold bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-2xl shadow-xl shadow-slate-900/25 group transition-all duration-300 hover:shadow-2xl hover:shadow-slate-900/30"
                     >
                       Start free trial
-                      <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                      <motion.div
+                        className="ml-2"
+                        animate={{ x: [0, 4, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                      >
+                        <ArrowRight className="w-5 h-5" />
+                      </motion.div>
                     </Button>
                   </Link>
                   <Button
                     size="lg"
                     variant="outline"
-                    className="h-12 px-6 text-sm font-medium rounded-xl border-slate-200 hover:bg-slate-50 group"
+                    className="h-14 px-8 text-base font-semibold rounded-2xl border-2 border-slate-200 hover:border-slate-300 hover:bg-white/80 group transition-all duration-300"
                   >
-                    <Play className="mr-2 w-4 h-4 text-emerald-600" />
+                    <Play className="mr-2 w-5 h-5 text-emerald-600 group-hover:scale-110 transition-transform" />
                     Watch demo
                   </Button>
                 </motion.div>
 
-                {/* Trust signals */}
+                {/* Trust Signals */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
-                  className="flex flex-wrap gap-4 text-xs text-slate-500"
+                  transition={{ delay: 0.65 }}
+                  className="flex flex-wrap gap-6 text-sm text-slate-500"
                 >
-                  {['No credit card', '20 free credits', 'Cancel anytime'].map((item) => (
-                    <span key={item} className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-500" />
-                      {item}
-                    </span>
+                  {[
+                    { text: 'No credit card', icon: Shield },
+                    { text: '20 free credits', icon: Zap },
+                    { text: 'Cancel anytime', icon: Check },
+                  ].map((item, i) => (
+                    <motion.span
+                      key={item.text}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.7 + i * 0.1 }}
+                      className="flex items-center gap-2"
+                    >
+                      <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center">
+                        <item.icon className="w-3 h-3 text-emerald-600" />
+                      </div>
+                      {item.text}
+                    </motion.span>
                   ))}
                 </motion.div>
               </div>
             </div>
           </BentoCard>
 
-          {/* === AI DEMO CARD === */}
-          <BentoCard delay={0.15} className="col-span-12 sm:col-span-6 lg:col-span-5 row-span-2">
+          {/* ════════════════════════════════════════════════════════════
+               AI DEMO CARD
+          ════════════════════════════════════════════════════════════ */}
+          <BentoCard delay={0.15} className="col-span-12 sm:col-span-6 lg:col-span-5 row-span-2" glow>
             <AIDemo />
           </BentoCard>
 
-          {/* === STATS ROW === */}
+          {/* ════════════════════════════════════════════════════════════
+               STATS ROW
+          ════════════════════════════════════════════════════════════ */}
           <div className="col-span-6 sm:col-span-3">
-            <StatCard value={150} suffix="K+" label="Active creators" icon={Users} delay={0.2} />
+            <StatCard
+              value={150}
+              suffix="K+"
+              label="Active creators"
+              icon={Users}
+              delay={0.2}
+              gradient="from-blue-500 to-indigo-600"
+            />
           </div>
           <div className="col-span-6 sm:col-span-3">
-            <StatCard value={10} suffix="M+" label="Images generated" icon={ImageIcon} delay={0.25} />
+            <StatCard
+              value={10}
+              suffix="M+"
+              label="Images generated"
+              icon={ImageIcon}
+              delay={0.25}
+              gradient="from-violet-500 to-purple-600"
+            />
           </div>
           <div className="col-span-6 sm:col-span-3">
-            <StatCard value={98} suffix="%" label="AI accuracy rate" icon={TrendingUp} delay={0.3} />
+            <StatCard
+              value={98}
+              suffix="%"
+              label="AI accuracy rate"
+              icon={TrendingUp}
+              delay={0.3}
+              gradient="from-emerald-500 to-teal-600"
+            />
           </div>
           <div className="col-span-6 sm:col-span-3">
-            <StatCard value={4.9} suffix="/5" label="User rating" icon={Star} delay={0.35} />
+            <StatCard
+              value={49}
+              suffix="/5"
+              label="User rating"
+              icon={Star}
+              delay={0.35}
+              gradient="from-amber-500 to-orange-600"
+            />
           </div>
 
-          {/* === FEATURES ROW === */}
+          {/* ════════════════════════════════════════════════════════════
+               FEATURES ROW
+          ════════════════════════════════════════════════════════════ */}
           <div className="col-span-12 sm:col-span-6 lg:col-span-4">
             <FeatureCard
               icon={ImageIcon}
@@ -561,7 +850,7 @@ export function HeroSection() {
               delay={0.45}
             />
           </div>
-          <div className="col-span-12 sm:col-span-6 lg:col-span-4">
+          <div className="col-span-12 sm:col-span-12 lg:col-span-4">
             <FeatureCard
               icon={Wand2}
               title="Smart Prompts"
@@ -571,28 +860,33 @@ export function HeroSection() {
             />
           </div>
 
-          {/* === TRUST BAR === */}
-          <BentoCard delay={0.55} hover={false} className="col-span-12">
-            <div className="px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                  <Shield className="w-4 h-4 text-white" />
-                </div>
+          {/* ════════════════════════════════════════════════════════════
+               TRUST BAR
+          ════════════════════════════════════════════════════════════ */}
+          <BentoCard delay={0.55} hover={false} className="col-span-12" gradient>
+            <div className="px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <motion.div
+                  className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/30"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <Shield className="w-6 h-6 text-white" />
+                </motion.div>
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">Trusted by 500+ companies worldwide</p>
-                  <p className="text-xs text-slate-500">Enterprise-grade security & 99.9% uptime SLA</p>
+                  <p className="text-base font-bold text-slate-900">Trusted by 500+ companies worldwide</p>
+                  <p className="text-sm text-slate-500">Enterprise-grade security & 99.9% uptime SLA</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-8">
                 {['Google', 'Microsoft', 'Stripe', 'Vercel', 'Notion'].map((company, i) => (
                   <motion.span
                     key={company}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.4 }}
-                    transition={{ delay: 0.7 + i * 0.1 }}
-                    whileHover={{ opacity: 0.7 }}
-                    className="text-sm font-semibold text-slate-400 cursor-default hidden sm:block"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 0.35 }}
+                    transition={{ delay: 0.8 + i * 0.1 }}
+                    whileHover={{ opacity: 0.7, scale: 1.05 }}
+                    className="text-base font-bold text-slate-400 cursor-default hidden sm:block transition-all duration-200"
                   >
                     {company}
                   </motion.span>
@@ -604,7 +898,7 @@ export function HeroSection() {
       </div>
 
       {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none" />
     </section>
   );
 }

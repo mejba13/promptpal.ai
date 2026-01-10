@@ -5,4 +5,3 @@ export { PricingSection } from './PricingSection';
 export { TestimonialsSection } from './TestimonialsSection';
 export { SolutionsSection } from './SolutionsSection';
 export { FAQSection } from './FAQSection';
-export { CTASection } from './CTASection';
