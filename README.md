@@ -4,6 +4,12 @@ AI-Powered Content Creation Platform
 
 PromptPal is an innovative SaaS platform designed to democratize content creation by helping users generate high-quality images, videos, and social media content through intelligent prompt assistance.
 
+<img width="2003" height="1420" alt="homepage" src="https://github.com/user-attachments/assets/385872ce-d9b3-44f8-8445-a4e8dde0bc84" />
+<img width="2006" height="1428" alt="customer-dashbaord" src="https://github.com/user-attachments/assets/6424d2ee-4726-4981-a328-7c395accbc17" />
+<img width="2082" height="1434" alt="admin-dashboard" src="https://github.com/user-attachments/assets/8736d970-480d-4a2b-a340-4b2398b0f623" />
+
+
+
 ## Features
 
 - **Smart Prompt System** - AI-powered prompt suggestions and one-click enhancement
