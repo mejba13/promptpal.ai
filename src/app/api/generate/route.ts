@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { HuggingFaceService } from '@/lib/services/huggingface';
 
-// Hugging Face API key from environment or provided in request
-const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || '''';
+// Hugging Face API key from environment variable (required)
+const HF_API_KEY = process.env.HUGGINGFACE_API_KEY || '';
 
 export async function POST(request: NextRequest) {
   try {
